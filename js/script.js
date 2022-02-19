@@ -1,6 +1,9 @@
 const profileInformation = document.querySelector(".overview");
 const username = "betweenbrackets";
 const repoList = document.querySelector(".repo-list");
+const listOfRepos = document.querySelector(".repos");
+const individualRepoData = document.querySelector(".repo-data")
+
 
 // Fetch the user's data from the GitHub API
 
@@ -61,4 +64,53 @@ const displayRepos = function (repos) {
         // global variable for <ul class="repo-list"></ul>
         repoList.append(listItem)
     }
+};
+
+// When the user clicks on the h3 element, the event handler will grab the element’s text and then pull the corresponding data for the repo with the same name. 
+// global variable for <ul class="repo-list"></ul>
+repoList.addEventListener("click", function (e) {
+    
+    if (e.target.matches("h3")) {
+        const repoName = e.target.innerText
+        // console.log(repoName);
+        getSelectedRepo(repoName);
+        
+    }
+})
+
+// Fetch the specific repo information
+
+const getSelectedRepo = async function (repoName) {
+    const fetchRepoInfo = await fetch(`https://api.github.com/repos/${username}/${repoName}`); // custom endpoint??
+    const repoInfo = await fetchRepoInfo.json();
+    // Fetch the languages
+    const fetchLanguages = await fetch(repoInfo.languages_url);
+    const languageData = await fetchLanguages.json();
+    console.log(languageData);
+    // Put the languageData Objects into an Array
+    const languages = [];
+    for (const language in languageData ) {
+        languages.push(language);
+        console.log(languages);
+    }
+
+    displaySpecificRepo(repoInfo, languages)
+};
+
+// Display the Specific Repo info
+
+const displaySpecificRepo = function (repoInfo, languages) {
+    individualRepoData.innerHTML = "";
+    const createDiv = document.createElement("div");
+    createDiv.innerHTML = 
+        `<h3>Name: ${repoInfo.name}</h3>
+        <p>Description: ${repoInfo.description}</p>
+        <p>Default Branch: ${repoInfo.main}</p>
+        <p>Languages: ${languages.join(", ")}</p>
+        <a class="visit" href="${repoInfo.html_url}" target="_blank" rel="noreferrer noopener">View Repo on GitHub!</a>
+        `;
+
+    individualRepoData.append(createDiv);
+    individualRepoData.classList.remove("hide");
+    listOfRepos.classList.add("hide");
 };
