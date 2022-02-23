@@ -2,24 +2,21 @@ const profileInformation = document.querySelector(".overview");
 const username = "betweenbrackets";
 const repoList = document.querySelector(".repo-list");
 const listOfRepos = document.querySelector(".repos");
-const individualRepoData = document.querySelector(".repo-data")
+const individualRepoData = document.querySelector(".repo-data");
+const backButton = document.querySelector(".view-repos");
+const filterInput = document.querySelector(".filter-repos");
 
 
 // Fetch the user's data from the GitHub API
-
 const getProfile = async function () {
     const response = await fetch(`https://api.github.com/users/${username}`);
-
     const profile = await response.json();
-
     console.log(profile);
-
     displayProfile(profile);
 };
 getProfile(); 
 
 // Display the fetched user data on the page
-
 const displayProfile = function (profile) {
     const createDiv = document.createElement("div");
     createDiv.classList.add("user-info");
@@ -36,13 +33,11 @@ const displayProfile = function (profile) {
     `;
 
     profileInformation.append(createDiv);
-
-    getRepos();
+    getRepos(username);
 };
 
 // Fetch the public repos
-
-const getRepos = async function () {
+const getRepos = async function (username) {
     const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`);
 
     const repos = await response.json();
@@ -55,11 +50,14 @@ const getRepos = async function () {
 
 // Display the Info About Your Repos
 
+// Display the repos
 const displayRepos = function (repos) {
+    // Show search input
+    filterInput.classList.remove("hide");
 // repos is an array of objects so iterate on a single repo
     for (const repo of repos) {
-        let listItem = document.createElement("li");
-        listItem.classList.add(".repo");
+        const listItem = document.createElement("li");
+        listItem.classList.add("repo");
         listItem.innerHTML = `<h3>${repo.name}</h3>`
         // global variable for <ul class="repo-list"></ul>
         repoList.append(listItem)
@@ -79,7 +77,6 @@ repoList.addEventListener("click", function (e) {
 })
 
 // Fetch the specific repo information
-
 const getSelectedRepo = async function (repoName) {
     const fetchRepoInfo = await fetch(`https://api.github.com/repos/${username}/${repoName}`); // custom endpoint??
     const repoInfo = await fetchRepoInfo.json();
@@ -98,7 +95,6 @@ const getSelectedRepo = async function (repoName) {
 };
 
 // Display the Specific Repo info
-
 const displaySpecificRepo = function (repoInfo, languages) {
     individualRepoData.innerHTML = "";
     const createDiv = document.createElement("div");
@@ -113,4 +109,34 @@ const displaySpecificRepo = function (repoInfo, languages) {
     individualRepoData.append(createDiv);
     individualRepoData.classList.remove("hide");
     listOfRepos.classList.add("hide");
+    backButton.classList.remove("hide");
 };
+
+// Enable the Back Button
+backButton.addEventListener("click", function () {
+    listOfRepos.classList.remove("hide");
+    individualRepoData.classList.add("hide");
+    backButton.classList.add("hide");
+
+})
+
+// Add Input Event to the Search Box
+
+filterInput.addEventListener("input", function (e) {
+    const searchText = e.target.value;
+    const repos = document.querySelectorAll(".repo");
+    const searchTextLower = searchText.toLowerCase();
+
+    console.log(searchText);
+    console.log(repos);
+    console.log(searchTextLower);
+
+    for (const repo of repos) { 
+        const lowerCaseRepoText = repo.innerText.toLowerCase();
+        if (lowerCaseRepoText.includes(searchTextLower)) {
+            repo.classList.remove("hide")
+        } else {
+            repo.classList.add("hide")
+        }
+    }      
+});
